@@ -1,0 +1,190 @@
+/* 基本样式设置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    padding: 20px;
+    overflow: hidden;
+}
+
+a{
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.links{
+    display: inline-block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: white;
+    background-color: #007BFF;
+    border-radius: 5px;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.links:hover {
+    background-color: #0056b3;
+}
+
+.container {
+    width: 100%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;  /* 防止容器溢出 */
+    max-height: 95vh; /* 最大高度限制，防止过高 */
+    margin: auto;
+    position: relative;
+}
+
+h1 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #4CAF50;
+}
+
+/* .search-options {
+    margin-bottom: 10px;
+} */
+
+.input-fields {
+    text-align: center;
+    display: flex;
+    /* flex-wrap: wrap; */
+    gap: 15px;
+    /* margin-bottom: 10px; */
+    position: relative; /* 确保输入框不被表格覆盖 */
+    z-index: 10;
+    display: inline;
+    border: 1px solid rgb(221, 221, 221);
+    padding: 15px;
+    margin-top: 10px;
+    background-color: rgb(249, 249, 249);
+}
+
+.input-field {
+    width: calc(10%);
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+    margin: 0px 5px;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* 表格容器，允许表格内容滚动 */
+.table-wrapper {
+    width: 100%;
+    overflow-y: auto;  /* 只允许垂直滚动 */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+/* 固定表头 */
+thead {
+    position: sticky;
+    top: 0;
+    background-color: #f4f4f9;
+    z-index: 1; /* 确保表头在其他内容之上 */
+}
+
+th {
+    background-color: #f4f4f9;
+}
+
+td a {
+    text-decoration: none;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+td a:hover {
+    border-bottom: 2px solid;
+}
+
+/* 防止超链接或表格内容换行 */
+a {
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------ */
+
+/* 让列表项（li）有一定的间距 */
+
+/* 给 ul 添加一些内边距，避免列表内容与边框紧贴 */
+#instructionsBlock {
+    display: none;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    padding-left: 20px;  /* 让列表项有足够的空间离开左边框 */
+}
+
+/* 给每个li添加一些间距，避免它们挤在一起 */
+ul li {
+    font-size: 16px; /* 调整字体大小 */
+    margin-left: 1em;
+}
+
+/* 隐藏的区域，初始时不显示 */
+#instructionsBlock {
+    display: none;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    position: relative; /* 使其成为定位容器 */
+}
+
+/* 将关闭按钮放在右上角 */
+#closeInstructions {
+    position: absolute;
+    top: 10px; /* 距离顶部10px */
+    right: 10px; /* 距离右侧10px */
+    font-size: 14px;
+    text-decoration: none;
+    color: #fff; /* 设定文字颜色为白色 */
+    background-color: #555555; /* 背景色 */
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* 设置关闭按钮的悬停效果 */
+#closeInstructions:hover {
+    background-color: #333333; /* 悬停时背景色 */
+}
