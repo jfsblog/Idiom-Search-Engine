@@ -75,7 +75,7 @@ const showResults = () => {
 
     // 判斷filteredResults的長度，顯示或隱藏h1
     const heading = document.querySelector('h1');
-    if (filteredResults.length >= 15) {
+    if (filteredResults.length >= 10) {
         heading.style.display = 'none';  // 隱藏 h1
     } else {
         heading.style.display = 'block';  // 顯示 h1
