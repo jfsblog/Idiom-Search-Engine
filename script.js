@@ -34,6 +34,11 @@ const showResults = () => {
         // 如果輸入框為空，確保 h1 顯示
         const heading = document.querySelector('h1');
         heading.style.display = 'block';  // 顯示 h1
+
+        const info = document.getElementById('info');
+        info.style.display = 'block';
+
+
         return;  // 如果都為空，則不顯示結果
     }
 
@@ -75,10 +80,12 @@ const showResults = () => {
 
     // 判斷filteredResults的長度，顯示或隱藏h1
     const heading = document.querySelector('h1');
-    if (filteredResults.length >= 10) {
+    if (filteredResults.length >= 11) {
         heading.style.display = 'none';  // 隱藏 h1
+        info.style.display = 'none';
     } else {
         heading.style.display = 'block';  // 顯示 h1
+        info.style.display = 'block';
     }
 };
 
