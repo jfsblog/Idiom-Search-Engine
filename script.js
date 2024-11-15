@@ -30,6 +30,10 @@ const showResults = () => {
     if (inputs.every(input => input === "")) {
         document.getElementById('resultsTable').style.display = 'none';
         document.getElementById('statisticsText').style.display = 'none';
+
+        // 如果輸入框為空，確保 h1 顯示
+        const heading = document.querySelector('h1');
+        heading.style.display = 'block';  // 顯示 h1
         return;  // 如果都為空，則不顯示結果
     }
 
@@ -56,7 +60,6 @@ const showResults = () => {
     const resultsTable = document.getElementById('resultsTable');
     resultsBody.innerHTML = '';  // 清空表格中的舊結果
     resultsTable.style.display = 'table';  // 顯示表格
-   
 
     // 處理結果顯示：將成語和其釋義顯示在表格中
     filteredResults.forEach(idiom => {
@@ -69,6 +72,14 @@ const showResults = () => {
         row.innerHTML = `<td>${link}</td><td>${definition}</td>`;
         resultsBody.appendChild(row);
     });
+
+    // 判斷filteredResults的長度，顯示或隱藏h1
+    const heading = document.querySelector('h1');
+    if (filteredResults.length >= 15) {
+        heading.style.display = 'none';  // 隱藏 h1
+    } else {
+        heading.style.display = 'block';  // 顯示 h1
+    }
 };
 
 
