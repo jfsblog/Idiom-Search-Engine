@@ -80,7 +80,7 @@ const showResults = () => {
 
     // 判斷filteredResults的長度，顯示或隱藏h1
     const heading = document.querySelector('h1');
-    if (filteredResults.length >= 11) {
+    if (filteredResults.length >= 1) {
         heading.style.display = 'none';  // 隱藏 h1
         info.style.display = 'none';
     } else {
