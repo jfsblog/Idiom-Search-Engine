@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教育部成語典成語查詢系統｜撰風旅食</title>
+    <title>教育部收錄之四字成語暨常用四字詞彙查詢系統｜撰風旅食</title>
     <link rel="stylesheet" href="styles.css"> <!-- 引入 CSS -->
     <link rel="icon" href="JFLOGO.ico" type="image/x-icon"> <!-- 設置 Favicon -->
 
     <!-- 基本 Open Graph 标签 -->
     <meta property="og:title" content="成語查詢系統">
-    <meta property="og:description" content="查詢符合特定位置文字的成語，並以教育部成語典為收錄依據。">
+    <meta property="og:description" content="查詢符合特定位置文字的成語或四字詞彙，並以教育部《重編國語辭典修訂本》為收錄依據。">
     <meta property="og:image" content="thumbnail.jpg">
     <meta property="og:url" content="https://jfsblog.github.io/Idiom-Search-Engine/">
     <meta property="og:type" content="website">
@@ -17,15 +17,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>成語查詢系統</h1>
+        <h1>教育部收錄之四字成語暨常用四字詞彙查詢系統</h1>
         <!-- 操作說明和作者資訊 -->
         <div id="info">
             <a class="links" href="#" id="showInstructions" style="margin-right: 10px;">程式說明</a>
             <!-- 操作說明區塊 -->
             <div id="instructionsBlock" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 10px; background-color: #f9f9f9;">
                 <ul>
-                    <li>說明：本程式是根據教育部成語典的成語資料進行蒐錄（不包含重編國語辭典修訂本的四字常用詞），可將特定文字輸入於指定位置進行比對搜尋。</li>
-                    <li>來源：<a href="https://dict.idioms.moe.edu.tw/search.jsp" target="_blank" rel="noopener noreferrer">教育部成語典</a>、<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_idiomsdict_download.html" target="_blank" rel="noopener noreferrer">教育部國語辭典公眾授權網</a>（<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_idiomsdict_download.html" target="_blank" rel="noopener noreferrer">dict_idioms_2020_20240926</a>）</li>
+                    <li>本程式是根據教育部國語辭典公眾授權網釋出之《重編國語辭典修訂本》資訊進行四字詞彙的整理，包括四字成語或常用且被收錄的四字詞彙，本程式可將文字輸入於指定位置進行比對搜尋，有利於文字接龍的練習或腦力激盪。（原本是以教育部《成語典》作為資料庫，但此典收錄的成語數量過少，因此改以《重編國語辭典修訂本》進行篩選）</li>
+                    <li>來源：
+                        <ul>
+                            <li>成語典：<a href="https://dict.idioms.moe.edu.tw/search.jsp" target="_blank" rel="noopener noreferrer">教育部《成語典》</a>、<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_idiomsdict_download.html" target="_blank" rel="noopener noreferrer">教育部國語辭典公眾授權網</a></li>
+                            <li>修訂本：<a href="https://dict.revised.moe.edu.tw/search.jsp?md=1" target="_blank" rel="noopener noreferrer">教育部《重編國語辭典修訂本》</a>、<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_reviseddict_download.html" target="_blank" rel="noopener noreferrer">教育部國語辭典公眾授權網</a></li>
+                        </ul>
+                    </li>
                     <li>作者：<a href="https://jfsblog.com/about" target="_blank" style="margin-right: 10px;">撰風</a></li>
                     <li>創建：2024/11/16</li>
                 </ul>
@@ -35,14 +40,14 @@
         </div>
 
         <div class="input-fields">
-            <label style="font-size: 18px;" class="input-field-lable">搜尋成語：</label>
+            <label style="font-size: 18px;" class="input-field-lable">搜尋四字詞彙：</label>
             <div class="search-box">
-                <input type="text" id="input1" placeholder="第一個字" class="input-field">
-                <input type="text" id="input2" placeholder="第二個字" class="input-field">
-                <input type="text" id="input3" placeholder="第三個字" class="input-field">
-                <input type="text" id="input4" placeholder="第四個字" class="input-field">
+                <input type="text" id="input1" placeholder="第一字" class="input-field">
+                <input type="text" id="input2" placeholder="第二字" class="input-field">
+                <input type="text" id="input3" placeholder="第三字" class="input-field">
+                <input type="text" id="input4" placeholder="第四字" class="input-field">
             </div>
-            <label><input type="checkbox" id="skipLongIdioms">只顯示4字成語</label>
+            <!-- <label><input type="checkbox" id="skipLongIdioms">只顯示4字成語</label> -->
         </div>
 
 
