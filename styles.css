@@ -59,39 +59,79 @@ h1 {
     color: #4CAF50;
 }
 
-/* .search-options {
-    margin-bottom: 10px;
-} */
 
+
+/* 預設樣式 (桌面版) */
 .input-fields {
     text-align: center;
     display: flex;
-    /* flex-wrap: wrap; */
     gap: 15px;
-    /* margin-bottom: 10px; */
-    position: relative; /* 确保输入框不被表格覆盖 */
-    z-index: 10;
-    display: inline;
     border: 1px solid rgb(221, 221, 221);
     padding: 15px;
     margin-top: 10px;
     background-color: rgb(249, 249, 249);
+    justify-content: center;
+    align-items: justify;
+    flex-wrap: wrap;
+    display: inline;
 }
 
 .input-field {
-    width: calc(10%);
+    width: calc(10%); /* 桌面版維持固定寬度 */
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
     text-align: center;
-    margin: 0px 5px;
+    margin: 0 5px;
 }
 
 input[type="text"]:focus {
     outline: none;
     border-color: #4CAF50;
 }
+
+label {
+    font-size: 14px;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.search-box{
+    display: inline;
+}
+
+
+@media screen and (max-width: 768px){
+    .input-fields{
+        width: 100%;
+    }
+
+    .input-field{
+        width: 20%;
+    }
+
+    label.input-field-lable{
+        display: none;
+    }
+
+    .search-box{
+        width: 100%;
+        display: block;
+    }
+
+    #skipLongIdioms{
+        margin-top: 10px;
+    }
+
+}
+
+
+
+
 
 /* 表格容器，允许表格内容滚动 */
 .table-wrapper {
@@ -150,9 +190,13 @@ a {
     display: none;
     border: 1px solid #ddd;
     padding: 15px;
-    margin-top: 10px;
     background-color: #f9f9f9;
     padding-left: 20px;  /* 让列表项有足够的空间离开左边框 */
+    line-height: 1.5em;
+}
+
+#instructionsBlock ul{
+    padding-right: 50px;
 }
 
 /* 给每个li添加一些间距，避免它们挤在一起 */
