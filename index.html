@@ -1,70 +1,402 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教育部四字成語暨四字詞彙查詢系統｜撰風旅食</title>
-    <link rel="stylesheet" href="styles.css"> <!-- 引入 CSS -->
-    <link rel="icon" href="JFLOGO.ico" type="image/x-icon"> <!-- 設置 Favicon -->
+    <title>教育部四字成語暨詞彙查詢系統｜漫步時光</title>
+    
+    <!-- SEO 基礎標籤 -->
+    <meta name="description" content="提供教育部《重編國語辭典修訂本》四字成語與詞彙查詢。可根據指定文字位置精確搜尋，適用於成語接龍練習、腦力激盪與國語文教學工具。">
+    <meta name="keywords" content="成語查詢, 教育部成語典, 四字詞彙, 成語接龍, 重編國語辭典修訂本, 國語文工具, 撰風旅食">
+    <meta name="author" content="撰風 (Shengle Wang)">
+    <link rel="canonical" href="https://jfsblog.github.io/Idiom-Search-Engine/">
 
-    <!-- 基本 Open Graph 标签 -->
-    <meta property="og:title" content="成語查詢系統">
-    <meta property="og:description" content="查詢符合特定位置文字的成語或四字詞彙，並以教育部《重編國語辭典修訂本》為收錄依據。">
-    <meta property="og:image" content="thumbnail.jpg">
-    <meta property="og:url" content="https://jfsblog.github.io/Idiom-Search-Engine/">
+    <!-- Open Graph (Facebook, LINE, Discord) -->
+    <meta property="og:title" content="教育部四字成語暨詞彙查詢系統｜漫步時光">
+    <meta property="og:description" content="根據指定位置搜尋特定文字的成語或四字詞彙，收錄自教育部國語辭典公眾授權網。">
     <meta property="og:type" content="website">
-    <meta property="og:author" content="撰風(Shengle_Wang)">
+    <meta property="og:url" content="https://jfsblog.github.io/Idiom-Search-Engine/">
+    <meta property="og:image" content="thumbnail.png">
+    <meta property="og:site_name" content="漫步時光">
 
+    <!-- Twitter Card (X) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="教育部四字成語暨詞彙查詢系統">
+    <meta name="twitter:description" content="精確搜尋教育部四字詞彙，輔助成語接龍與文字練習。">
+    <meta name="twitter:image" content="thumbnail.png">
+
+    <!-- 結構化資料 (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "教育部四字成語暨詞彙查詢系統",
+      "description": "根據文字位置查詢符合條件的教育部四字成語與詞彙。",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any",
+      "author": {
+        "@type": "Person",
+        "name": "Shengle Wang",
+        "url": "https://jfsblog.com/about"
+      }
+    }
+    </script>
+    
+    <!-- 引入 Google 字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@200..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS 樣式區域 --- */
+        :root {
+            --bg-paper: #f9f8f4;      /* 宣紙色 */
+            --ink-black: #2c3e50;     /* 墨色 */
+            --accent-blue: #4a6572;   /* 灰藍色 */
+            --accent-red: #8e443d;    /* 硃砂紅 */
+            --border-color: #d1ccc0;
+            --serif: 'Noto Serif TC', serif;
+            --sans: 'Noto Sans TC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-paper);
+            color: var(--ink-black);
+            font-family: var(--sans);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+        }
+
+        /* 置頂標題列：具備切換功能 */
+        header {
+            background-color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        header h1 {
+            font-family: var(--serif);
+            font-size: 1.1rem;
+            margin: 0;
+            letter-spacing: 2px;
+            color: var(--accent-blue);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* Header 內的迷你搜尋框 */
+        .header-search {
+            display: none; /* 初始隱藏 */
+            opacity: 0;
+            transform: translateY(10px);
+            gap: 8px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        header.is-scrolled h1 {
+            display: none;
+            opacity: 0;
+        }
+
+        header.is-scrolled .header-search {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 外部連結與資訊樣式 */
+        #info {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .links {
+            color: var(--accent-blue);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--accent-blue);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .links:hover {
+            color: var(--accent-red);
+            border-bottom: 1px solid var(--accent-red);
+        }
+
+        /* 搜尋區塊 */
+        .search-section {
+            background: #fff;
+            padding: 40px 20px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .search-label {
+            font-family: var(--serif);
+            display: block;
+            margin-bottom: 25px;
+            font-size: 1rem;
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+
+        /* 輸入框共用樣式 */
+        .input-field {
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            font-family: var(--serif);
+            text-align: center;
+            border: 1.5px solid var(--border-color);
+            background: #fdfdfd;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-red);
+            background: #fff;
+            box-shadow: 0 0 10px rgba(142, 68, 61, 0.1);
+        }
+
+        /* Header 內的迷你輸入框樣式 */
+        .input-mini {
+            width: 35px;
+            height: 35px;
+            font-size: 18px;
+            border-width: 1px;
+        }
+
+        .statistics {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #888;
+            font-family: var(--sans);
+        }
+
+        /* 結果表格樣式 */
+        .table-wrapper {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            font-family: var(--serif);
+            background-color: #f0eeea;
+            color: var(--accent-blue);
+            padding: 15px;
+            text-align: center; 
+            border-bottom: 2px solid var(--border-color);
+            font-size: 1rem;
+        }
+
+        td {
+            padding: 18px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        .idiom-word {
+            font-family: var(--serif);
+            font-weight: 700;
+            font-size: 1.2rem;
+            min-width: 120px;
+            text-align: center; 
+        }
+
+        .idiom-word a {
+            color: var(--accent-red);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .idiom-word a:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        .explanation-text {
+            font-family: var(--sans);
+            color: #444;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            text-align: justify; 
+        }
+
+        /* 彈窗樣式 (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.45);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-paper);
+            margin: 20px;
+            padding: 35px;
+            border: 1px solid var(--border-color);
+            width: 85%;
+            max-width: 650px;
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            animation: modalFadeIn 0.35s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 25px;
+            top: 20px;
+            font-size: 32px;
+            font-weight: 300;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--accent-red);
+        }
+
+        .modal-body {
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            color: #555;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .modal-body h2 { color: var(--accent-blue); margin-top: 0; }
+        .modal-body h3 { 
+            font-family: var(--serif); 
+            color: var(--accent-blue); 
+            border-left: 4px solid var(--accent-red); 
+            padding-left: 12px;
+            margin-top: 25px;
+        }
+
+        .modal-body ul { padding-left: 20px; }
+        .modal-body li { margin-bottom: 10px; }
+
+        /* 手機版適配 */
+        @media (max-width: 480px) {
+            .input-field { width: 45px; height: 45px; font-size: 22px; }
+            .input-mini { width: 30px; height: 30px; font-size: 16px; }
+            .search-box { gap: 8px; }
+            header h1 { font-size: 1rem; }
+            .modal-content { width: 95%; padding: 25px 20px; }
+        }
+    </style>
 </head>
 <body>
+
+    <header id="stickyHeader">
+        <h1 id="headerTitle">教育部四字成語暨四字詞彙查詢系統</h1>
+        <!-- 捲動後顯示的迷你搜尋 -->
+        <div class="header-search" id="headerSearch">
+            <span style="font-family: var(--serif); font-size: 0.85rem; color: var(--accent-blue); margin-right: 5px;">查詢：</span>
+            <input type="text" class="input-field input-mini" data-index="0" placeholder="">
+            <input type="text" class="input-field input-mini" data-index="1" placeholder="">
+            <input type="text" class="input-field input-mini" data-index="2" placeholder="">
+            <input type="text" class="input-field input-mini" data-index="3" placeholder="">
+        </div>
+    </header>
+
     <div class="container">
-        <h1>教育部<span style="background-color: #4CAF50; color: white; padding: 3px; margin: 3px;">四字成語</span>暨<span style="background-color: #4CAF50; color: white; padding: 3px; margin: 3px;">四字詞彙</span>查詢系統</h1>
-        <!-- 操作說明和作者資訊 -->
         <div id="info">
-            <a class="links" href="#" id="showInstructions" style="margin-right: 10px;">程式說明</a>
-            <!-- 操作說明區塊 -->
-            <div id="instructionsBlock" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 10px; background-color: #f9f9f9;">
-                <ul>
-                    <li>本程式是根據教育部國語辭典公眾授權網釋出之《重編國語辭典修訂本》資訊進行四字詞彙的整理，包括四字成語或常用且被收錄的四字詞彙，本程式可將文字輸入於指定位置進行比對搜尋，有利於文字接龍的練習或腦力激盪。（原本是以教育部《成語典》作為資料庫，但此典收錄的成語數量過少，因此改以《重編國語辭典修訂本》進行篩選）</li>
-                    <li>來源：
-                        <ul>
-                            <li>成語典：<a href="https://dict.idioms.moe.edu.tw/search.jsp" target="_blank" rel="noopener noreferrer">教育部《成語典》</a>、<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_idiomsdict_download.html" target="_blank" rel="noopener noreferrer">教育部國語辭典公眾授權網</a></li>
-                            <li>修訂本：<a href="https://dict.revised.moe.edu.tw/search.jsp?md=1" target="_blank" rel="noopener noreferrer">教育部《重編國語辭典修訂本》</a>、<a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_reviseddict_download.html" target="_blank" rel="noopener noreferrer">教育部國語辭典公眾授權網</a></li>
-                        </ul>
-                    </li>
-                    <li>作者：<a href="https://jfsblog.com/about" target="_blank" style="margin-right: 10px;">撰風</a></li>
-                    <li>創建：2024/11/16</li>
-                </ul>
-                <a href="#" id="closeInstructions">關閉</a>
-            </div>
-            
+            <span id="showInstructions" class="links">說明</span>
         </div>
 
-        <div class="input-fields">
-            <label style="font-size: 18px;" class="input-field-lable">搜尋四字詞彙：</label>
+        <div id="instructionModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeModal">&times;</span>
+                <h2 class="serif">程式說明</h2>
+                <div class="modal-body">
+                    <p>本程式根據教育部國語辭典公眾授權網釋出之《重編國語辭典修訂本》資訊進行四字詞彙的整理，包括四字成語或常用且被收錄的四字詞彙。</p>
+                    <p>本程式可將文字輸入於指定位置進行比對搜尋，有利於文字接龍的練習或腦力激盪。</p>
+                    <h3>典籍來源</h3>
+                    <ul>
+                        <li><strong>成語典：</strong><a href="https://dict.idioms.moe.edu.tw/search.jsp" target="_blank" rel="noopener">教育部《成語典》官網</a></li>
+                        <li><strong>修訂本：</strong><a href="https://dict.revised.moe.edu.tw/search.jsp?md=1" target="_blank" rel="noopener">教育部《重編國語辭典修訂本》</a></li>
+                        <li><strong>授權網：</strong><a href="https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_reviseddict_download.html" target="_blank" rel="noopener">教育部國語辭典公眾授權網</a></li>
+                    </ul>
+                    <h3>關於系統</h3>
+                    <p><strong>作者：</strong><a href="https://jfsblog.com/about" target="_blank" class="links">撰風 (Shengle Wang)</a></p>
+                    <p><strong>創建日期：</strong>2024/11/16</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主搜尋核心區塊 -->
+        <div class="search-section" id="mainSearchSection">
+            <span class="search-label">－ 請於對應空格內輸入文字 －</span>
             <div class="search-box">
-                <input type="text" id="input1" placeholder="第一字" class="input-field">
-                <input type="text" id="input2" placeholder="第二字" class="input-field">
-                <input type="text" id="input3" placeholder="第三字" class="input-field">
-                <input type="text" id="input4" placeholder="第四字" class="input-field">
+                <input type="text" class="input-field main-input" data-index="0" placeholder="" maxlength="1">
+                <input type="text" class="input-field main-input" data-index="1" placeholder="" maxlength="1">
+                <input type="text" class="input-field main-input" data-index="2" placeholder="" maxlength="1">
+                <input type="text" class="input-field main-input" data-index="3" placeholder="" maxlength="1">
             </div>
-            <!-- <label><input type="checkbox" id="skipLongIdioms">只顯示4字成語</label> -->
+            <div class="statistics">
+                <span id="statisticsText" style="display: none;"></span>
+            </div>
         </div>
 
-
-        <div class="statistics">
-            <span id="statisticsText"></span> <!-- 用來顯示統計信息 -->
-        </div>
-        
         <div class="table-wrapper">
             <table id="resultsTable" style="display: none;">
                 <thead>
                     <tr>
-                        <th>成语</th>
-                        <th>釋義</th>
+                        <th style="width: 22%;">詞彙名稱</th>
+                        <th style="width: 78%;">釋義內容</th>
                     </tr>
                 </thead>
                 <tbody id="resultsBody"></tbody>
@@ -72,6 +404,116 @@
         </div>
     </div>
 
-    <script src="script.js"></script> <!-- 引入 JS -->
+    <script>
+        let idioms = [];
+
+        const loadJSON = () => {
+            fetch('dict_revised_2015_20240927.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("找不到資料庫檔案");
+                    return response.json();
+                })
+                .then(data => {
+                    idioms = data.map(row => ({
+                        idiom: row['字詞名'],
+                        definition: row['釋義'],
+                    }));
+                })
+                .catch(error => console.error('讀取資料出錯:', error));
+        };
+
+        const showResults = () => {
+            // 從主搜尋框獲取當前值（因為兩組已同步，取一組即可）
+            const mainInputs = document.querySelectorAll('.main-input');
+            const inputs = Array.from(mainInputs).map(i => i.value.trim());
+
+            const resultsTable = document.getElementById('resultsTable');
+            const statisticsText = document.getElementById('statisticsText');
+            const resultsBody = document.getElementById('resultsBody');
+
+            if (inputs.every(input => input === "")) {
+                resultsTable.style.display = 'none';
+                statisticsText.style.display = 'none';
+                return;
+            }
+
+            const filteredResults = idioms.filter(item => {
+                if (!item.idiom || item.idiom.length < 4) return false;
+                return inputs.every((input, index) => {
+                    return input === "" || item.idiom[index] === input;
+                });
+            });
+
+            statisticsText.textContent = `找到了 ${filteredResults.length} 筆符合條件的詞彙`;
+            statisticsText.style.display = 'block';
+
+            resultsBody.innerHTML = '';
+            if (filteredResults.length > 0) {
+                resultsTable.style.display = 'table';
+                filteredResults.forEach(item => {
+                    const shortDef = item.definition ? item.definition.split('\n')[0] : "暫無詳細釋義。";
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="idiom-word">
+                            <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(item.idiom)}" target="_blank">
+                                ${item.idiom}
+                            </a>
+                        </td>
+                        <td class="explanation-text">${shortDef}</td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+            } else {
+                resultsTable.style.display = 'none';
+                statisticsText.textContent = "查無符合條件的詞彙。";
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. 同步與搜尋事件
+            const allInputs = document.querySelectorAll('.input-field');
+            allInputs.forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = e.target.dataset.index;
+                    const val = e.target.value;
+                    
+                    // 同步所有具備相同 index 的輸入框
+                    document.querySelectorAll(`.input-field[data-index="${idx}"]`).forEach(el => {
+                        el.value = val;
+                    });
+                    
+                    showResults();
+                });
+            });
+
+            // 2. 捲動偵測 (Intersection Observer)
+            const header = document.getElementById('stickyHeader');
+            const mainSearchSection = document.getElementById('mainSearchSection');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    // 當主搜尋區域不再完整顯示（滾出視窗頂部）時
+                    if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+                        header.classList.add('is-scrolled');
+                    } else {
+                        header.classList.remove('is-scrolled');
+                    }
+                });
+            }, { threshold: 0 });
+
+            observer.observe(mainSearchSection);
+
+            // 3. 彈窗邏輯
+            const modal = document.getElementById('instructionModal');
+            const btn = document.getElementById('showInstructions');
+            const closeBtn = document.getElementById('closeModal');
+
+            if (btn) btn.onclick = (e) => { e.preventDefault(); modal.style.display = "flex"; };
+            if (closeBtn) closeBtn.onclick = () => { modal.style.display = "none"; };
+            window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
+
+            loadJSON();
+        });
+    </script>
 </body>
 </html>
