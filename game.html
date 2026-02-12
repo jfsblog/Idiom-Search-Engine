@@ -211,81 +211,88 @@
         document.getElementById('clock-btn').disabled = clocks <= 0;
         closeModal();
 
-        // 難度進階邏輯
+        // 核心設定：根據勝場數(score)嚴格劃分階段
         let minAnswers = 50;
-        let minHoles = 1;
-        let maxHoles = 1;
+        let forceHoleCount = 3; // 預設挖3格 (提示1字)
+        let randomHolesRange = null; // 用於後期隨機挖空
         let isExtreme = false;
 
         if (score >= 40) { 
-            minAnswers = 1; 
-            isExtreme = true; 
-            minHoles = 2; // 分數高時，最少挖 2 個字
-            maxHoles = 3; 
+            // 41題以後：提示1~3字 (填1~3格)，答案1+
+            minAnswers = 1;
+            randomHolesRange = [1, 2, 3]; // 挖1~3格
+            isExtreme = true;
         } else if (score >= 30) { 
+            // 31~40題：提示1~2字 (填2~3格)，答案10+
             minAnswers = 10; 
-            minHoles = 2;
-            maxHoles = 3;
+            randomHolesRange = [2, 3]; // 挖2~3格
         } else if (score >= 20) { 
+            // 21~30題：固定提示1字 (填3格)，答案20+
             minAnswers = 20; 
-            minHoles = 2;
-            maxHoles = 2; // 固定挖 2 個字
+            forceHoleCount = 3;
         } else if (score >= 10) { 
+            // 11~20題：固定提示1字 (填3格)，答案30+
             minAnswers = 30; 
-            minHoles = 1;
-            maxHoles = 2;
-        } else {
+            forceHoleCount = 3;
+        } else { 
+            // 1~10題：固定提示1字 (填3格)，答案50+
             minAnswers = 50; 
-            minHoles = 1;
-            maxHoles = 1; // 剛開始只挖 1 個字
+            forceHoleCount = 3;
         }
 
-        let bestCandidate = null, attemptLimit = 300; 
+        let bestCandidate = null;
+        let attemptLimit = 3000;
 
         while (attemptLimit--) {
             const target = allIdioms[Math.floor(Math.random() * allIdioms.length)];
             const word = target['字詞名'];
-            let hIndices = [];
             
-            // 根據目前分數階段決定挖空數量
-            let numHoles = Math.floor(Math.random() * (maxHoles - minHoles + 1)) + minHoles;
+            // 決定本題「必須」有幾個空格 (numHoles)
+            let numHoles;
+            if (randomHolesRange) {
+                numHoles = randomHolesRange[Math.floor(Math.random() * randomHolesRange.length)];
+            } else {
+                numHoles = forceHoleCount;
+            }
+            
+            // 隨機決定空格位置
+            let hIndices = [];
             let indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
             hIndices = indices.slice(0, numHoles).sort();
 
+            // 計算符合該組合的答案數
             const matches = allIdioms.filter(item => {
-                for(let j=0; j<4; j++) { if(!hIndices.includes(j) && item['字詞名'][j] !== word[j]) return false; }
+                for(let j=0; j<4; j++) {
+                    if(!hIndices.includes(j) && item['字詞名'][j] !== word[j]) return false;
+                }
                 return true;
             });
 
-            if (isExtreme) { 
-                // 極限挑戰：尋找解數在 1 到 5 之間的組合
-                if (matches.length >= 1 && matches.length <= 5) { 
-                    bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; 
-                    break; 
-                } 
-            } else { 
-                // 一般階段：尋找符合最小詞數門檻的組合
-                if (matches.length >= minAnswers) { 
-                    bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; 
-                    break; 
-                } 
+            // 嚴格檢查：必須符合該階段的空格數量且答案數達標
+            if (matches.length >= minAnswers) {
+                bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
+                break; 
             }
 
-            if (!bestCandidate) {
-                bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
-            } else {
-                if (!isExtreme && Math.abs(matches.length - minAnswers) < Math.abs(bestCandidate.validAnswers.length - minAnswers)) {
+            // 備選方案：如果搜尋快結束還沒找到，暫存一個答案數最多、且空格數「絕對正確」的題目
+            if (!bestCandidate || (matches.length > bestCandidate.validAnswers.length)) {
+                // 只有當空格數完全符合預期時，才更新備選
+                if (hIndices.length === numHoles) {
                     bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
                 }
             }
         }
 
+        // 最後保險：確保最終題目不為空且空格數正確
         currentQuestion = bestCandidate;
         const potentialCount = currentQuestion.validAnswers.length;
-        document.getElementById('potential-count').innerText = isExtreme ? `極限挑戰：此組合僅 ${potentialCount} 個可能解` : `此組合共有 ${potentialCount} 種可能`;
+        const actualReveal = 4 - currentQuestion.holeIndices.length;
+
+        document.getElementById('potential-count').innerText = 
+            isExtreme ? `極限挑戰：此組合共有 ${potentialCount} 個可能解 (提示 ${actualReveal} 字)` : 
+            `此組合共有 ${potentialCount} 種可能 (提示 ${actualReveal} 字)`;
         
         renderGrid();
-        // 挖空越多，時間補償越多 (每個洞額外 5 秒)
         startTimer(15000 + (currentQuestion.holeIndices.length * 5000));
     }
 
