@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>四字成語暨詞彙查詢系統 - 成語擂台挑戰賽｜漫步時光</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- nav -->
+    <link rel="stylesheet" href="nav.css">
+    <script src="nav.js"></script>
+
+    <!-- style -->
+    <link rel="stylesheet" href="game.css">
+
+    <style>
+        :root {
+            --accent-red: #a63d33;      /* 優雅紅 */
+            --accent-blue: #34495e;     /* 深邃藍 */
+            --accent-gold: #c6a355;     /* 古典金 */
+            --bg-paper: #f9f7f2;        /* 紙張色 */
+            --border-color: #e0ddd5;
+            --text-main: #2c3e50;
+            --serif: 'Noto Serif TC', serif;
+            --sans: 'Noto Sans TC', sans-serif;
+        }
+
+        body { 
+            background-color: var(--bg-paper); 
+            color: var(--text-main); 
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            width: 95%;
+            max-width: 600px;
+            margin: 15px auto;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        /* 文字說明區塊 */
+        .art-intro {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-family: var(--serif);
+        }
+        .art-intro span {
+            display: block;
+        }
+
+        .rules-small {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: #95a5a6;
+            line-height: 1.6;
+            border-top: 1px solid #f0ede5;
+            padding-top: 15px;
+        }
+
+        /* 狀態列 */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            background: #fcfbf9;
+            padding: 12px 5px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #f0ede5;
+        }
+        .stat-item { display: flex; flex-direction: column; align-items: center; border-right: 1px solid #eee; }
+        .stat-item:last-child { border-right: none; }
+        .stat-label { font-size: 0.7rem; color: #999; margin-bottom: 2px; }
+        .stat-value { font-weight: 600; color: var(--accent-blue); font-size: 0.9rem; }
+
+        /* 計時條 */
+        #timer-container { height: 3px; background: #eee; border-radius: 1px; margin-bottom: 20px; overflow: hidden; }
+        #timer-bar { height: 100%; background: var(--accent-red); transition: width 0.1s linear; }
+
+        /* 成語方塊簡約化 */
+        .idiom-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            max-width: 360px;
+            margin: 0 auto 20px;
+        }
+        
+        .char-box {
+            aspect-ratio: 1;
+            border: 1.5px solid #eae7e0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-family: var(--serif);
+            font-weight: 600;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .char-box:not(:has(input)) {
+            background: #f8f6f2;
+            color: #7f8c8d;
+            border-color: #e5e2da;
+        }
+
+        .game-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 1.8rem;
+            font-family: var(--serif);
+            font-weight: 700;
+            color: var(--accent-red);
+            outline: none;
+            background: #fffdf5;
+            transition: background 0.2s;
+        }
+        
+        .game-input:focus {
+            background: #fff;
+        }
+        .char-box:has(.game-input:focus) {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 8px rgba(198, 163, 85, 0.1);
+        }
+
+        /* 動作按鈕 */
+        .btn-group { display: flex; justify-content: center; gap: 10px; margin-top: 5px; }
+        .btn {
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-family: var(--serif);
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 0.95rem;
+        }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-tool { background: var(--accent-gold); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #ccc; color: #999; }
+        .btn:hover { opacity: 0.85; }
+
+        /* 訊息提示 */
+        #msg { min-height: 1.8em; margin-bottom: 8px; font-weight: bold; font-size: 0.95rem; }
+
+        /* --- 解答彈窗 Modal --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 480px;
+            border-radius: 8px;
+            position: relative;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: modalSlide 0.3s ease-out;
+            box-sizing: border-box;
+        }
+        @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: none; border: none;
+            font-size: 1.4rem; color: #ccc;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close:hover { color: var(--accent-red); }
+
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            text-align: left;
+        }
+        .modal-body {
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+            padding-right: 8px;
+        }
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .idiom-list-item { margin-bottom: 12px; }
+        .idiom-title { font-weight: 700; color: var(--accent-red); font-size: 1.1rem; display: block; margin-bottom: 3px; }
+        .idiom-def { font-size: 0.9rem; color: #555; }
+
+        /* 獎勵卡 */
+        .reward-badge { display: inline-block; background: #fdfaf5; border: 1px solid #eee; padding: 10px 18px; border-radius: 4px; margin: 5px; font-weight: bold; }
+
+        /* 結語畫面優化 */
+        #scene-end .game-card { padding: 30px 15px; }
+        canvas { 
+            max-width: 100%; 
+            height: auto; 
+            border: 1px solid #f0ede5; 
+            margin: 10px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 開始介面 -->
+    <div id="scene-start" class="scene active">
+        <div class="game-card">
+            <h1 style="color: var(--accent-red); font-family: var(--serif); font-size: 2.3rem; margin-bottom: 12px; font-weight: 700;">成語擂台挑戰賽</h1>
+            
+            <div class="art-intro">
+                <span>文海浮沈，墨韻留香。</span>
+                <span>一字一句，皆是千載智慧之結晶。</span>
+                <span>邀君執筆，共赴這場文字擂台賽。</span>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <input type="text" id="player-name" placeholder="請輸入您的名號" maxlength="8" style="padding:12px; text-align:center; font-size:1.1rem; border:1px solid var(--border-color); border-radius:4px; width: 220px; outline: none; font-family: var(--serif);">
+            </div>
+            
+            <button class="btn btn-primary" onclick="startGame()">鳴鑼開戰</button>
+
+            <div class="rules-small">
+                開放式填空：隨著題數增加，挑戰難度將逐漸攀升。<br>
+                考驗手腦並用：計時器持續運行，可點擊延時道具補充時間。<br>
+                <span style="color: var(--accent-red);">※ 競賽期間請專注畫面，任何視窗大小變更或離開焦點將視為作弊。</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲主介面 -->
+    <div id="scene-game" class="scene">
+        <div class="game-card">
+            <div class="stats-dashboard">
+                <div class="stat-item">
+                    <span class="stat-label">挑戰者</span>
+                    <span class="stat-value" id="display-name">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">勝場</span>
+                    <span class="stat-value">🏆 <span id="score">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">元氣</span>
+                    <span class="stat-value" id="hp-display">❤️ x3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">道具</span>
+                    <span class="stat-value" id="clock-display">⏳ x3</span>
+                </div>
+            </div>
+
+            <div id="timer-container"><div id="timer-bar"></div></div>
+            
+            <p id="potential-count" style="font-size: 0.8rem; color: #bbb; margin-bottom: 12px; font-family: var(--sans);"></p>
+            
+            <div class="idiom-grid" id="game-grid"></div>
+            
+            <div id="msg"></div>
+
+            <div id="action-area" class="btn-group">
+                <button class="btn btn-primary" id="submit-btn" onclick="checkAnswer()">提交答案</button>
+                <button class="btn btn-tool" id="clock-btn" onclick="useClockItem()">⏳ 延時</button>
+                <button class="btn btn-outline" onclick="giveUp()">放棄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 解答彈窗 Modal -->
+    <div id="modal-explanation" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAndNext()">✕</button>
+            <div class="modal-header">
+                <h3 id="modal-title" style="margin:0; font-family: var(--serif); font-weight: 700;">解答與解析</h3>
+            </div>
+            <div class="modal-body" id="exp-body">
+                <!-- 內容動態生成 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeAndNext()">繼續挑戰</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中場休息 -->
+    <div id="scene-rest" class="scene">
+        <div class="game-card">
+            <h2 style="color: var(--accent-blue); font-family: var(--serif); font-weight: 700;">☕ 休息時刻</h2>
+            <div class="art-intro">
+                <span>身經百戰，文采斐然。</span>
+                <span>您已連續闖過第 <span id="rest-milestone">10</span> 關。</span>
+            </div>
+            <div style="margin: 20px 0;">
+                <div class="reward-badge">❤️ 體力恢復</div>
+                <div class="reward-badge">⏳ 道具補充</div>
+            </div>
+            <button class="btn btn-primary" onclick="resumeGame()">整裝出發</button>
+        </div>
+    </div>
+
+    <!-- 結束介面 -->
+    <div id="scene-end" class="scene">
+        <div class="game-card">
+            <h1 style="font-family: var(--serif); color: var(--accent-red); font-weight: 700; margin-bottom: 5px;">挑戰結束</h1>
+            
+            <canvas id="result-canvas" width="600" height="450"></canvas>
+            
+            <div class="btn-group" style="margin-top: 15px;">
+                <button class="btn btn-outline" onclick="downloadResult()">下載成就圖</button>
+                <button class="btn btn-primary" onclick="location.reload()">再試一次</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let allIdioms = [];
+    let currentQuestion = { baseWord: "", holeIndices: [], validAnswers: [], sortedList: [] };
+    
+    /**
+     * userAnswersHistory 改為按「挖空組合」紀錄答案
+     * Key: 模式特徵 (如 "__之_")
+     * Value: Set (該模式下已使用的答案)
+     */
+    let userAnswersHistory = {}; 
+    
+    let score = 0, hp = 3, clocks = 3, playerName = "";
+    let timerInterval, endTime;
+    let isTransitioning = false, isGameActive = false, clockUsedThisRound = false;
+    
+    let startWidth = window.innerWidth;
+    let startHeight = window.innerHeight;
+
+    async function loadData() {
+        try {
+            const response = await fetch('https://idiom.strolltimes.com/dict_revised_2015_20240927.json');
+            const data = await response.json();
+            allIdioms = data.filter(item => item['字詞名'] && item['字詞名'].length === 4);
+            allIdioms.sort(() => Math.random() - 0.5);
+            document.getElementById('potential-count').innerText = "資料載入完成，隨時可以開戰。";
+        } catch (e) {
+            document.getElementById('potential-count').innerText = "資料載入失敗。";
+        }
+    }
+    loadData();
+
+    const triggerAntiCheat = (msg = "🚫 心思不專！此題作廢。") => {
+        if (isGameActive && !isTransitioning) {
+            clearInterval(timerInterval);
+            handleWrong(msg);
+        }
+    };
+
+    document.addEventListener("visibilitychange", () => { if (document.hidden) triggerAntiCheat("🚫 離開畫面！此題作廢。"); });
+    window.addEventListener("blur", () => { triggerAntiCheat("🚫 失去焦點！此題作廢。"); });
+    
+    window.addEventListener("resize", () => {
+        if (Math.abs(window.innerWidth - startWidth) > 80 || Math.abs(window.innerHeight - startHeight) > 80) {
+            triggerAntiCheat("🚫 視窗變動！此題作廢。");
+        }
+    });
+
+    function startGame() {
+        if (allIdioms.length === 0) return alert("資料載入中...");
+        playerName = document.getElementById('player-name').value.trim() || "無名英雄";
+        document.getElementById('display-name').innerText = playerName;
+        
+        startWidth = window.innerWidth;
+        startHeight = window.innerHeight;
+        
+        userAnswersHistory = {}; // 遊戲開始重置歷史紀錄
+        score = 0;
+        hp = 3;
+        clocks = 3;
+
+        updateStatsDisplay();
+        switchScene('scene-game');
+        newQuestion();
+    }
+
+    function switchScene(id) {
+        document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function updateStatsDisplay() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('hp-display').innerText = "❤️ x" + hp;
+        document.getElementById('clock-display').innerText = "⏳ x" + clocks;
+    }
+
+    /**
+     * 生成當前題目的模式特徵碼
+     * 例如：秦晉之好，挖空 [0,1,3] -> "__之_"
+     */
+    function getCurrentPatternCode() {
+        let code = "";
+        for(let i=0; i<4; i++) {
+            code += currentQuestion.holeIndices.includes(i) ? "_" : currentQuestion.baseWord[i];
+        }
+        return code;
+    }
+
+    function newQuestion() {
+        if (hp <= 0) return endGame();
+        isTransitioning = false; isGameActive = true; clockUsedThisRound = false;
+        
+        document.getElementById('msg').innerHTML = "";
+        document.getElementById('action-area').style.display = "flex";
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('clock-btn').disabled = clocks <= 0;
+        closeModal();
+
+        let bestCandidate = null, attemptLimit = 300; 
+        let minAnswers = 30, forceUnique = false;
+        if (score >= 40) { minAnswers = 1; forceUnique = true; }
+        else if (score >= 30) { minAnswers = 5; }
+        else if (score >= 20) { minAnswers = 10; }
+        else if (score >= 10) { minAnswers = 20; }
+
+        while (attemptLimit--) {
+            const target = allIdioms[Math.floor(Math.random() * allIdioms.length)];
+            const word = target['字詞名'];
+            
+            // 注意：這裡不再限制「題目種子」不能重複，因為挖空方式不同即視為新題
+            
+            let hIndices = [];
+            if (forceUnique) { hIndices = [Math.floor(Math.random() * 4)]; }
+            else {
+                let numHoles = Math.floor(Math.random() * 3) + 1;
+                let indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+                hIndices = indices.slice(0, numHoles).sort();
+            }
+            const matches = allIdioms.filter(item => {
+                for(let j=0; j<4; j++) { if(!hIndices.includes(j) && item['字詞名'][j] !== word[j]) return false; }
+                return true;
+            });
+
+            if (forceUnique) { if (matches.length === 1) { bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; break; } }
+            else { if (matches.length >= minAnswers) { bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; break; } }
+            
+            if (!bestCandidate || Math.abs(matches.length - minAnswers) < Math.abs(bestCandidate.validAnswers.length - minAnswers)) {
+                bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
+            }
+        }
+
+        currentQuestion = bestCandidate;
+        document.getElementById('potential-count').innerText = forceUnique ? `巔峰對決：唯一解模式` : `此組合共有 ${currentQuestion.validAnswers.length} 種可能`;
+        renderGrid();
+        startTimer(15000 + (currentQuestion.holeIndices.length * 5000));
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('game-grid');
+        grid.innerHTML = "";
+        for (let i = 0; i < 4; i++) {
+            const box = document.createElement('div');
+            box.className = "char-box";
+            if (currentQuestion.holeIndices.includes(i)) {
+                box.innerHTML = `<input type="text" id="ans-${i}" class="game-input" data-idx="${i}" autocomplete="off">`;
+            } else { box.innerText = currentQuestion.baseWord[i]; }
+            grid.appendChild(box);
+        }
+        
+        const inputs = document.querySelectorAll('.game-input');
+        if(inputs[0]) inputs[0].focus();
+        
+        inputs.forEach((input, idx) => {
+            let isComposing = false;
+            input.addEventListener('compositionstart', () => { isComposing = true; });
+            input.addEventListener('compositionend', () => {
+                isComposing = false;
+                if (input.value && inputs[idx+1]) { inputs[idx+1].focus(); }
+            });
+            input.addEventListener('input', () => {
+                if (!isComposing && input.value && inputs[idx+1]) { inputs[idx+1].focus(); }
+            });
+            input.onkeydown = (e) => {
+                if(e.key === 'Backspace' && !input.value && inputs[idx-1]) inputs[idx-1].focus();
+                if(e.key === 'Enter') checkAnswer();
+            };
+        });
+    }
+
+    function startTimer(duration) {
+        clearInterval(timerInterval);
+        const start = Date.now();
+        endTime = start + duration;
+        timerInterval = setInterval(() => {
+            const now = Date.now();
+            const remain = Math.max(0, endTime - now);
+            const progress = (remain / duration) * 100;
+            document.getElementById('timer-bar').style.width = progress + "%";
+            if (remain <= 0) { clearInterval(timerInterval); handleWrong("⌛ 時間到！"); }
+        }, 50);
+    }
+
+    function useClockItem() {
+        if (clocks <= 0 || clockUsedThisRound || !isGameActive) return;
+        clocks--; clockUsedThisRound = true;
+        updateStatsDisplay();
+        endTime += 15000;
+        document.getElementById('msg').innerHTML = "<span style='color:var(--accent-gold)'>⏳ 時光延長 15 秒</span>";
+        document.getElementById('clock-btn').disabled = true;
+    }
+
+    function checkAnswer() {
+        if (isTransitioning) return;
+        const inputs = document.querySelectorAll('.game-input');
+        let attempt = "", complete = true;
+        for(let i=0; i<4; i++) {
+            if(currentQuestion.holeIndices.includes(i)) {
+                const val = document.getElementById(`ans-${i}`).value.trim();
+                if(!val) complete = false;
+                attempt += val;
+            } else { attempt += currentQuestion.baseWord[i]; }
+        }
+        if(!complete) return;
+
+        const found = allIdioms.find(item => item['字詞名'] === attempt);
+        
+        if (found) {
+            const word = found['字詞名'];
+            const pattern = getCurrentPatternCode();
+            
+            // 檢查該「特定挖空模式」下是否已經用過這個答案
+            if (userAnswersHistory[pattern] && userAnswersHistory[pattern].has(word)) {
+                document.getElementById('msg').innerHTML = `<span style="color:orange">⚠️ 在此填空組合下，「${word}」已用過！</span>`;
+                return;
+            }
+
+            // 若為正確且在該模式下尚未用過
+            clearInterval(timerInterval);
+            isTransitioning = true; 
+            isGameActive = false;
+            
+            score++; 
+            
+            // 紀錄到該模式下的歷史紀錄中
+            if (!userAnswersHistory[pattern]) userAnswersHistory[pattern] = new Set();
+            userAnswersHistory[pattern].add(word);
+            
+            updateStatsDisplay();
+            document.getElementById('msg').innerHTML = `<span style="color:green">✨ 正確：${attempt}</span>`;
+            showExplanations(found, true);
+        } else { 
+            clearInterval(timerInterval);
+            isTransitioning = true; 
+            isGameActive = false;
+            handleWrong("❌ 查無此詞", attempt); 
+        }
+    }
+
+    function handleWrong(reason, attempt) {
+        clearInterval(timerInterval);
+        isTransitioning = true; isGameActive = false;
+        hp--; updateStatsDisplay();
+        document.getElementById('msg').innerHTML = `<span style="color:var(--accent-red)">${reason}</span>`;
+        showExplanations(null, false);
+    }
+
+    function showExplanations(userFound, isSuccess) {
+        const modal = document.getElementById('modal-explanation');
+        const body = document.getElementById('exp-body');
+        const title = document.getElementById('modal-title');
+        
+        let list = [...currentQuestion.validAnswers];
+        if (userFound) { list = [userFound, ...list.filter(a => a['字詞名'] !== userFound['字詞名'])]; }
+        
+        title.innerText = isSuccess ? "✅ 正確解鎖" : "💡 可惜了，正確答案參考：";
+        
+        let html = "";
+        list.forEach(item => {
+            const cleanDef = item['釋義'].replace(/<[^>]*>/g, '').slice(0, 150);
+            html += `<div class="idiom-list-item">
+                        <span class="idiom-title">【${item['字詞名']}】</span>
+                        <div class="idiom-def">${cleanDef}...</div>
+                     </div>`;
+        });
+        
+        body.innerHTML = html;
+        modal.style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById('modal-explanation').style.display = "none";
+    }
+
+    function closeAndNext() {
+        closeModal();
+        handleNextStep();
+    }
+
+    function handleNextStep() {
+        if (hp <= 0) {
+            endGame();
+            return;
+        }
+        if (score > 0 && score % 10 === 0) { 
+            showRestScene(); 
+        } else { 
+            newQuestion(); 
+        }
+    }
+
+    function showRestScene() { document.getElementById('rest-milestone').innerText = score; switchScene('scene-rest'); }
+    function resumeGame() { hp = Math.min(5, hp + 1); clocks++; updateStatsDisplay(); switchScene('scene-game'); newQuestion(); }
+    function giveUp() { if (!isGameActive) return; handleWrong("已放棄"); }
+    
+    function getRankInfo(s) {
+        if (s >= 50) return { title: "【筆落驚風雨】", desc: "登峰造極，曠古絕倫。" };
+        if (s >= 40) return { title: "【才高八斗】", desc: "驚才絕豔，翰林名宿。" };
+        if (s >= 30) return { title: "【胸藏錦繡】", desc: "博古通今，學富五車。" };
+        if (s >= 20) return { title: "【斐然成章】", desc: "辭藻清麗，才氣初展。" };
+        if (s >= 10) return { title: "【略通文墨】", desc: "筆耕不輟，漸入佳境。" };
+        return { title: "【尋章摘句】", desc: "字海浮沈，猶需砥礪。" };
+    }
+
+    function endGame() { 
+        isGameActive = false; 
+        clearInterval(timerInterval); 
+        closeModal(); 
+        switchScene('scene-end'); 
+        drawResult(); 
+    }
+
+    function drawResult() {
+        const canvas = document.getElementById('result-canvas');
+        const ctx = canvas.getContext('2d');
+        const rank = getRankInfo(score);
+        
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 600, 450);
+        ctx.strokeStyle = "#eee"; ctx.lineWidth = 15; ctx.strokeRect(0, 0, 600, 450);
+        
+        ctx.fillStyle = "#2c3e50"; ctx.textAlign = "center";
+        ctx.font = "600 30px 'Noto Serif TC'"; ctx.fillText("成語擂台成就榜", 300, 80);
+        
+        ctx.font = "700 120px 'Noto Serif TC'"; ctx.fillStyle = "#a63d33"; ctx.fillText(`${score}`, 300, 220);
+        
+        ctx.font = "600 34px 'Noto Serif TC'"; ctx.fillStyle = "#2c3e50"; ctx.fillText(rank.title, 300, 315);
+        
+        ctx.font = "italic 22px 'Noto Serif TC'"; ctx.fillStyle = "#7f8c8d"; ctx.fillText(rank.desc, 300, 360);
+        
+        ctx.font = "600 20px 'Noto Serif TC'"; ctx.fillStyle = "#34495e"; ctx.fillText(`挑戰者：${playerName}`, 300, 410);
+    }
+
+    function downloadResult() {
+        const link = document.createElement('a');
+        link.download = `rank_${playerName}.png`;
+        link.href = document.getElementById('result-canvas').toDataURL();
+        link.click();
+    }
+</script>
+</body>
+</html>
