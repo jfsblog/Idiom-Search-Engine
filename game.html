@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -7,7 +6,7 @@
     <title>四字成語暨詞彙查詢系統 - 成語擂台挑戰賽｜漫步時光</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- nav -->
+    <!-- nav (假設路徑正確) -->
     <link rel="stylesheet" href="nav.css">
     <script src="nav.js"></script>
 
@@ -70,7 +69,7 @@
             
             <div class="idiom-grid" id="game-grid"></div>
             
-            <div id="msg"></div>
+            <div id="msg" style="min-height: 24px; margin-bottom: 15px;"></div>
 
             <div id="action-area" class="btn-group">
                 <button class="btn btn-primary" id="submit-btn" onclick="checkAnswer()">提交答案</button>
@@ -91,7 +90,7 @@
                 <!-- 內容動態生成 -->
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeAndNext()">繼續挑戰</button>
+                <button class="btn btn-primary" style="width: 100%;" onclick="closeAndNext()">繼續挑戰</button>
             </div>
         </div>
     </div>
@@ -99,16 +98,26 @@
     <!-- 中場休息 -->
     <div id="scene-rest" class="scene">
         <div class="game-card">
-            <h2 style="color: var(--accent-blue); font-family: var(--serif); font-weight: 700;">☕ 休息時刻</h2>
-            <div class="art-intro">
-                <span>身經百戰，文采斐然。</span>
-                <span>您已連續闖過第 <span id="rest-milestone">10</span> 關。</span>
+            <h2 style="color: var(--accent-blue); font-family: var(--serif); font-weight: 700; font-size: 2.2rem;">☕ 小憩片刻</h2>
+            <div class="art-intro" style="margin-top: 15px;">
+                <span style="display: block; font-size: 1.1rem; color: #999;">身經百戰，文采斐然。</span>
+                <span style="display: block; font-size: 1.3rem; margin-top: 5px; color: var(--text-main);">
+                    您已連續闖過 <span id="rest-milestone" style="color: var(--accent-red); font-weight: 900;">10</span> 關
+                </span>
             </div>
-            <div style="margin: 20px 0;">
-                <div class="reward-badge">❤️ 體力恢復</div>
-                <div class="reward-badge">⏳ 道具補充</div>
+            
+            <div class="reward-container">
+                <div class="reward-item">
+                    <span class="reward-icon">❤️</span>
+                    <span class="reward-text">+1</span>
+                </div>
+                <div class="reward-item">
+                    <span class="reward-icon">⏳</span>
+                    <span class="reward-text">+1</span>
+                </div>
             </div>
-            <button class="btn btn-primary" onclick="resumeGame()">整裝出發</button>
+
+            <button class="btn btn-primary" style="padding: 12px 50px; font-size: 1.1rem; margin-top: 10px;" onclick="resumeGame()">繼續挑戰</button>
         </div>
     </div>
 
@@ -116,9 +125,7 @@
     <div id="scene-end" class="scene">
         <div class="game-card">
             <h1 style="font-family: var(--serif); color: var(--accent-red); font-weight: 700; margin-bottom: 5px;">挑戰結束</h1>
-            
             <canvas id="result-canvas" width="600" height="450"></canvas>
-            
             <div class="btn-group" style="margin-top: 15px;">
                 <button class="btn btn-outline" onclick="downloadResult()">下載成就圖</button>
                 <button class="btn btn-primary" onclick="location.reload()">再試一次</button>
@@ -129,20 +136,11 @@
 <script>
     let allIdioms = [];
     let currentQuestion = { baseWord: "", holeIndices: [], validAnswers: [], sortedList: [] };
-    
-    /**
-     * userAnswersHistory 改為按「挖空組合」紀錄答案
-     * Key: 模式特徵 (如 "__之_")
-     * Value: Set (該模式下已使用的答案)
-     */
     let userAnswersHistory = {}; 
-    
     let score = 0, hp = 3, clocks = 3, playerName = "";
     let timerInterval, endTime;
     let isTransitioning = false, isGameActive = false, clockUsedThisRound = false;
-    
-    let startWidth = window.innerWidth;
-    let startHeight = window.innerHeight;
+    let startWidth = window.innerWidth, startHeight = window.innerHeight;
 
     async function loadData() {
         try {
@@ -166,7 +164,6 @@
 
     document.addEventListener("visibilitychange", () => { if (document.hidden) triggerAntiCheat("🚫 離開畫面！此題作廢。"); });
     window.addEventListener("blur", () => { triggerAntiCheat("🚫 失去焦點！此題作廢。"); });
-    
     window.addEventListener("resize", () => {
         if (Math.abs(window.innerWidth - startWidth) > 80 || Math.abs(window.innerHeight - startHeight) > 80) {
             triggerAntiCheat("🚫 視窗變動！此題作廢。");
@@ -177,15 +174,10 @@
         if (allIdioms.length === 0) return alert("資料載入中...");
         playerName = document.getElementById('player-name').value.trim() || "無名英雄";
         document.getElementById('display-name').innerText = playerName;
-        
         startWidth = window.innerWidth;
         startHeight = window.innerHeight;
-        
-        userAnswersHistory = {}; // 遊戲開始重置歷史紀錄
-        score = 0;
-        hp = 3;
-        clocks = 3;
-
+        userAnswersHistory = {}; 
+        score = 0; hp = 3; clocks = 3;
         updateStatsDisplay();
         switchScene('scene-game');
         newQuestion();
@@ -202,10 +194,6 @@
         document.getElementById('clock-display').innerText = "⏳ x" + clocks;
     }
 
-    /**
-     * 生成當前題目的模式特徵碼
-     * 例如：秦晉之好，挖空 [0,1,3] -> "__之_"
-     */
     function getCurrentPatternCode() {
         let code = "";
         for(let i=0; i<4; i++) {
@@ -217,49 +205,87 @@
     function newQuestion() {
         if (hp <= 0) return endGame();
         isTransitioning = false; isGameActive = true; clockUsedThisRound = false;
-        
         document.getElementById('msg').innerHTML = "";
         document.getElementById('action-area').style.display = "flex";
         document.getElementById('submit-btn').disabled = false;
         document.getElementById('clock-btn').disabled = clocks <= 0;
         closeModal();
 
+        // 難度進階邏輯
+        let minAnswers = 50;
+        let minHoles = 1;
+        let maxHoles = 1;
+        let isExtreme = false;
+
+        if (score >= 40) { 
+            minAnswers = 1; 
+            isExtreme = true; 
+            minHoles = 2; // 分數高時，最少挖 2 個字
+            maxHoles = 3; 
+        } else if (score >= 30) { 
+            minAnswers = 10; 
+            minHoles = 2;
+            maxHoles = 3;
+        } else if (score >= 20) { 
+            minAnswers = 20; 
+            minHoles = 2;
+            maxHoles = 2; // 固定挖 2 個字
+        } else if (score >= 10) { 
+            minAnswers = 30; 
+            minHoles = 1;
+            maxHoles = 2;
+        } else {
+            minAnswers = 50; 
+            minHoles = 1;
+            maxHoles = 1; // 剛開始只挖 1 個字
+        }
+
         let bestCandidate = null, attemptLimit = 300; 
-        let minAnswers = 30, forceUnique = false;
-        if (score >= 40) { minAnswers = 1; forceUnique = true; }
-        else if (score >= 30) { minAnswers = 5; }
-        else if (score >= 20) { minAnswers = 10; }
-        else if (score >= 10) { minAnswers = 20; }
 
         while (attemptLimit--) {
             const target = allIdioms[Math.floor(Math.random() * allIdioms.length)];
             const word = target['字詞名'];
-            
-            // 注意：這裡不再限制「題目種子」不能重複，因為挖空方式不同即視為新題
-            
             let hIndices = [];
-            if (forceUnique) { hIndices = [Math.floor(Math.random() * 4)]; }
-            else {
-                let numHoles = Math.floor(Math.random() * 3) + 1;
-                let indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
-                hIndices = indices.slice(0, numHoles).sort();
-            }
+            
+            // 根據目前分數階段決定挖空數量
+            let numHoles = Math.floor(Math.random() * (maxHoles - minHoles + 1)) + minHoles;
+            let indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+            hIndices = indices.slice(0, numHoles).sort();
+
             const matches = allIdioms.filter(item => {
                 for(let j=0; j<4; j++) { if(!hIndices.includes(j) && item['字詞名'][j] !== word[j]) return false; }
                 return true;
             });
 
-            if (forceUnique) { if (matches.length === 1) { bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; break; } }
-            else { if (matches.length >= minAnswers) { bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; break; } }
-            
-            if (!bestCandidate || Math.abs(matches.length - minAnswers) < Math.abs(bestCandidate.validAnswers.length - minAnswers)) {
+            if (isExtreme) { 
+                // 極限挑戰：尋找解數在 1 到 5 之間的組合
+                if (matches.length >= 1 && matches.length <= 5) { 
+                    bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; 
+                    break; 
+                } 
+            } else { 
+                // 一般階段：尋找符合最小詞數門檻的組合
+                if (matches.length >= minAnswers) { 
+                    bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches }; 
+                    break; 
+                } 
+            }
+
+            if (!bestCandidate) {
                 bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
+            } else {
+                if (!isExtreme && Math.abs(matches.length - minAnswers) < Math.abs(bestCandidate.validAnswers.length - minAnswers)) {
+                    bestCandidate = { baseWord: word, holeIndices: hIndices, validAnswers: matches };
+                }
             }
         }
 
         currentQuestion = bestCandidate;
-        document.getElementById('potential-count').innerText = forceUnique ? `巔峰對決：唯一解模式` : `此組合共有 ${currentQuestion.validAnswers.length} 種可能`;
+        const potentialCount = currentQuestion.validAnswers.length;
+        document.getElementById('potential-count').innerText = isExtreme ? `極限挑戰：此組合僅 ${potentialCount} 個可能解` : `此組合共有 ${potentialCount} 種可能`;
+        
         renderGrid();
+        // 挖空越多，時間補償越多 (每個洞額外 5 秒)
         startTimer(15000 + (currentQuestion.holeIndices.length * 5000));
     }
 
@@ -274,10 +300,8 @@
             } else { box.innerText = currentQuestion.baseWord[i]; }
             grid.appendChild(box);
         }
-        
         const inputs = document.querySelectorAll('.game-input');
         if(inputs[0]) inputs[0].focus();
-        
         inputs.forEach((input, idx) => {
             let isComposing = false;
             input.addEventListener('compositionstart', () => { isComposing = true; });
@@ -329,37 +353,25 @@
             } else { attempt += currentQuestion.baseWord[i]; }
         }
         if(!complete) return;
-
         const found = allIdioms.find(item => item['字詞名'] === attempt);
-        
         if (found) {
             const word = found['字詞名'];
             const pattern = getCurrentPatternCode();
-            
-            // 檢查該「特定挖空模式」下是否已經用過這個答案
             if (userAnswersHistory[pattern] && userAnswersHistory[pattern].has(word)) {
                 document.getElementById('msg').innerHTML = `<span style="color:orange">⚠️ 在此填空組合下，「${word}」已用過！</span>`;
                 return;
             }
-
-            // 若為正確且在該模式下尚未用過
             clearInterval(timerInterval);
-            isTransitioning = true; 
-            isGameActive = false;
-            
+            isTransitioning = true; isGameActive = false;
             score++; 
-            
-            // 紀錄到該模式下的歷史紀錄中
             if (!userAnswersHistory[pattern]) userAnswersHistory[pattern] = new Set();
             userAnswersHistory[pattern].add(word);
-            
             updateStatsDisplay();
             document.getElementById('msg').innerHTML = `<span style="color:green">✨ 正確：${attempt}</span>`;
             showExplanations(found, true);
         } else { 
             clearInterval(timerInterval);
-            isTransitioning = true; 
-            isGameActive = false;
+            isTransitioning = true; isGameActive = false;
             handleWrong("❌ 查無此詞", attempt); 
         }
     }
@@ -376,12 +388,9 @@
         const modal = document.getElementById('modal-explanation');
         const body = document.getElementById('exp-body');
         const title = document.getElementById('modal-title');
-        
         let list = [...currentQuestion.validAnswers];
         if (userFound) { list = [userFound, ...list.filter(a => a['字詞名'] !== userFound['字詞名'])]; }
-        
         title.innerText = isSuccess ? "✅ 正確解鎖" : "💡 可惜了，正確答案參考：";
-        
         let html = "";
         list.forEach(item => {
             const cleanDef = item['釋義'].replace(/<[^>]*>/g, '').slice(0, 150);
@@ -390,73 +399,49 @@
                         <div class="idiom-def">${cleanDef}...</div>
                      </div>`;
         });
-        
         body.innerHTML = html;
         modal.style.display = "flex";
     }
 
-    function closeModal() {
-        document.getElementById('modal-explanation').style.display = "none";
-    }
-
-    function closeAndNext() {
-        closeModal();
-        handleNextStep();
-    }
-
+    function closeModal() { document.getElementById('modal-explanation').style.display = "none"; }
+    function closeAndNext() { closeModal(); handleNextStep(); }
     function handleNextStep() {
-        if (hp <= 0) {
-            endGame();
-            return;
-        }
-        if (score > 0 && score % 10 === 0) { 
-            showRestScene(); 
-        } else { 
-            newQuestion(); 
-        }
+        if (hp <= 0) { endGame(); return; }
+        if (score > 0 && score % 10 === 0) { showRestScene(); } else { newQuestion(); }
+    }
+    function showRestScene() { document.getElementById('rest-milestone').innerText = score; switchScene('scene-rest'); }
+    
+    function resumeGame() { 
+        hp = Math.min(5, hp + 1); 
+        clocks++; 
+        updateStatsDisplay(); 
+        switchScene('scene-game'); 
+        newQuestion(); 
     }
 
-    function showRestScene() { document.getElementById('rest-milestone').innerText = score; switchScene('scene-rest'); }
-    function resumeGame() { hp = Math.min(5, hp + 1); clocks++; updateStatsDisplay(); switchScene('scene-game'); newQuestion(); }
     function giveUp() { if (!isGameActive) return; handleWrong("已放棄"); }
-    
     function getRankInfo(s) {
-        if (s >= 50) return { title: "【筆落驚風雨】", desc: "登峰造極，曠古絕倫。" };
-        if (s >= 40) return { title: "【才高八斗】", desc: "驚才絕豔，翰林名宿。" };
-        if (s >= 30) return { title: "【胸藏錦繡】", desc: "博古通今，學富五車。" };
-        if (s >= 20) return { title: "【斐然成章】", desc: "辭藻清麗，才氣初展。" };
-        if (s >= 10) return { title: "【略通文墨】", desc: "筆耕不輟，漸入佳境。" };
+        if (s >= 50) return { title: "【筆落驚風雨】", desc: "登峰造極，曠古絕倫" };
+        if (s >= 40) return { title: "【才高八斗】", desc: "驚才絕豔，翰林名宿" };
+        if (s >= 30) return { title: "【胸藏錦繡】", desc: "博古通今，學富五車" };
+        if (s >= 20) return { title: "【斐然成章】", desc: "辭藻清麗，才氣初展" };
+        if (s >= 10) return { title: "【略通文墨】", desc: "筆耕不輟，漸入佳境" };
         return { title: "【尋章摘句】", desc: "字海浮沈，猶需砥礪。" };
     }
-
-    function endGame() { 
-        isGameActive = false; 
-        clearInterval(timerInterval); 
-        closeModal(); 
-        switchScene('scene-end'); 
-        drawResult(); 
-    }
-
+    function endGame() { isGameActive = false; clearInterval(timerInterval); closeModal(); switchScene('scene-end'); drawResult(); }
     function drawResult() {
         const canvas = document.getElementById('result-canvas');
         const ctx = canvas.getContext('2d');
         const rank = getRankInfo(score);
-        
         ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 600, 450);
         ctx.strokeStyle = "#eee"; ctx.lineWidth = 15; ctx.strokeRect(0, 0, 600, 450);
-        
         ctx.fillStyle = "#2c3e50"; ctx.textAlign = "center";
         ctx.font = "600 30px 'Noto Serif TC'"; ctx.fillText("成語擂台成就榜", 300, 80);
-        
         ctx.font = "700 120px 'Noto Serif TC'"; ctx.fillStyle = "#a63d33"; ctx.fillText(`${score}`, 300, 220);
-        
         ctx.font = "600 34px 'Noto Serif TC'"; ctx.fillStyle = "#2c3e50"; ctx.fillText(rank.title, 300, 315);
-        
-        ctx.font = "italic 22px 'Noto Serif TC'"; ctx.fillStyle = "#7f8c8d"; ctx.fillText(rank.desc, 300, 360);
-        
+        ctx.font = "22px 'Noto Serif TC'"; ctx.fillStyle = "#7f8c8d"; ctx.fillText(rank.desc, 300, 360);
         ctx.font = "600 20px 'Noto Serif TC'"; ctx.fillStyle = "#34495e"; ctx.fillText(`挑戰者：${playerName}`, 300, 410);
     }
-
     function downloadResult() {
         const link = document.createElement('a');
         link.download = `rank_${playerName}.png`;
@@ -464,6 +449,5 @@
         link.click();
     }
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"79259ae5cbaa467ab78253d78bca2e6b","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
