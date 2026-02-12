@@ -433,7 +433,7 @@
         if (s >= 30) return { title: "【胸藏錦繡】", desc: "博古通今，學富五車" };
         if (s >= 20) return { title: "【斐然成章】", desc: "辭藻清麗，才氣初展" };
         if (s >= 10) return { title: "【略通文墨】", desc: "筆耕不輟，漸入佳境" };
-        return { title: "【尋章摘句】", desc: "字海浮沈，猶需砥礪。" };
+        return { title: "【尋章摘句】", desc: "字海浮沈，猶需砥礪" };
     }
     function endGame() { isGameActive = false; clearInterval(timerInterval); closeModal(); switchScene('scene-end'); drawResult(); }
     function drawResult() {
